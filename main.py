@@ -1,13 +1,16 @@
 ## TODO ##
 
+# Continue making bullets go pew pew
+
 # Topdown Shooter
 # By NoiseGenerator
 # Licensed under GNU GPL
 
-import pygame, random
+import pygame, random, math
 pygame.init()
 all_sprites_list = pygame.sprite.Group()
 bullet_list = pygame.sprite.Group()
+enemy_list = pygame.sprite.Group()
 
 # Colors
 BLACK = (0, 0, 0)
@@ -72,6 +75,9 @@ class Player(pygame.sprite.Sprite):
         self.image = player_image_down  
     
     def shoot(self, angle):
+        
+        
+       
         bullet = Bullet()
         # Set the bullet so it is where the player is
         bullet.rect.x = self.rect.x
@@ -80,7 +86,19 @@ class Player(pygame.sprite.Sprite):
         all_sprites_list.add(bullet)
         bullet_list.add(bullet)
         bullet.angle = angle        
-    
+        
+class Enemy(pygame.sprite.Sprite):
+    """ This class represents the enemy . """
+    def __init__(self):
+        # Call the parent class (Sprite) constructor
+        super().__init__()
+        
+        self.image = pygame.Surface([25,25])
+        self.image.fill(RED)
+        
+        self.rect = self.image.get_rect()
+        
+        
 class Bullet(pygame.sprite.Sprite):
     """ This class represents the bullet . """
     def __init__(self):
@@ -91,18 +109,15 @@ class Bullet(pygame.sprite.Sprite):
         self.image.fill(BLACK)
  
         self.rect = self.image.get_rect()
-        self.angle = 0
+        
+        
         
     def update(self):
-        """ Move the bullet. """
-        if self.angle == 0:
-            self.rect.y -= 6
-        if self.angle == 1:
-            self.rect.x += 6
-        if self.angle == 2:
-            self.rect.y += 6
-        if self.angle == 3:
-            self.rect.x -= 6
+        self.pos += self.velocity
+        self.rect.center = self.pos
+        
+            
+        
         
 def main():
     
@@ -164,35 +179,41 @@ def main():
                     
                     # FIRING #
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    player.shoot(3)
-                    
-                if event.key == pygame.K_RIGHT:
-                    player.shoot(1)
-                    
-                if event.key == pygame.K_UP:
-                    player.shoot(0)
-                    
-                if event.key == pygame.K_DOWN:
-                    player.shoot(2)              
-        
+                if event.key == pygame.K_SPACE:
+                    vector_x = pygame.mouse.get_pos()[0]
+                    vector_y = pygame.mouse.get_pos()[1]
+                    vector = math.hypot(vector_x, vector_y)
+                    print(vector)
+                
+                                 
                         	
                     
             
-                
+        if len(enemy_list) < 10:
+            # This represents a enemy
+            enemy = Enemy()
+         
+            # Set a random location for the enemy
+            enemy.rect.x = random.randrange(200)
+            enemy.rect.y = random.randrange(200)
+         
+            # Add the enemy to the list of objects
+            enemy_list.add(enemy)
+            all_sprites_list.add(enemy)   
+            
 
 
         all_sprites_list.update() 
         # Calculate mechanics for each bullet
         for bullet in bullet_list:
     
-            ## See if it hit a block
-            #block_hit_list = pygame.sprite.spritecollide(bullet, block_list, True)
+            # See if it hit a block
+            enemy_hit_list = pygame.sprite.spritecollide(bullet, enemy_list, True)
     
-            ## For each block hit, remove the bullet and add to the score
-            #for block in block_hit_list:
-                #bullet_list.remove(bullet)
-                #all_sprites_list.remove(bullet)
+            # For each block hit, remove the bullet and add to the score
+            for enemy in enemy_hit_list:
+                bullet_list.remove(bullet)
+                all_sprites_list.remove(bullet)
                 #score += 1
                 #print(score)
     
