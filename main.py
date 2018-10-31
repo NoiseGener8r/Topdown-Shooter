@@ -7,6 +7,7 @@
 # Licensed under GNU GPL
 
 import pygame, random, math
+from pygame.math import Vector2
 pygame.init()
 all_sprites_list = pygame.sprite.Group()
 bullet_list = pygame.sprite.Group()
@@ -74,7 +75,7 @@ class Player(pygame.sprite.Sprite):
         self.new_y = 3
         self.image = player_image_down  
     
-    def shoot(self, angle):
+    def shoot(self):
         
         
        
@@ -85,7 +86,7 @@ class Player(pygame.sprite.Sprite):
         # Add the bullet to the lists
         all_sprites_list.add(bullet)
         bullet_list.add(bullet)
-        bullet.angle = angle        
+                
         
 class Enemy(pygame.sprite.Sprite):
     """ This class represents the enemy . """
@@ -101,20 +102,22 @@ class Enemy(pygame.sprite.Sprite):
         
 class Bullet(pygame.sprite.Sprite):
     """ This class represents the bullet . """
-    def __init__(self):
-        # Call the parent class (Sprite) constructor
-        super().__init__()
- 
-        self.image = pygame.Surface([4, 4])
-        self.image.fill(BLACK)
- 
-        self.rect = self.image.get_rect()
+    def __init__(self, x, y, angle, speed):
+        pygame.sprite.Sprite.__init__(self)
+        # Rotate the bullet image (negative angle because y-axis is flipped).
+        self.image = pygame.transform.rotate(pygame.Surface([5,5]), angle)
+        self.rect = self.image.get_rect(center=(x, y))
+        angle = math.radians(angle)
+        print(angle)
+        self.speed_x = speed * math.cos(angle)
+        self.speed_y = speed * math.sin(angle)       
+               
         
         
         
     def update(self):
-        self.pos += self.velocity
-        self.rect.center = self.pos
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
         
             
         
@@ -180,10 +183,18 @@ def main():
                     # FIRING #
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    vector_x = pygame.mouse.get_pos()[0]
-                    vector_y = pygame.mouse.get_pos()[1]
+                    vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
+                    vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
                     vector = math.hypot(vector_x, vector_y)
-                    print(vector)
+                    angle = math.degrees(math.atan2(vector_y, vector_x))
+                    if angle < 0:
+                        angle += 360
+                    bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
+                    bullet_list.add(bullet)
+                    all_sprites_list.add(bullet)
+                    
+        
+                   
                 
                                  
                         	
@@ -194,8 +205,8 @@ def main():
             enemy = Enemy()
          
             # Set a random location for the enemy
-            enemy.rect.x = random.randrange(200)
-            enemy.rect.y = random.randrange(200)
+            enemy.rect.x = random.randrange(SCREEN_WIDTH)
+            enemy.rect.y = random.randrange(SCREEN_HEIGHT)
          
             # Add the enemy to the list of objects
             enemy_list.add(enemy)
