@@ -90,14 +90,29 @@ class Player(pygame.sprite.Sprite):
         
 class Enemy(pygame.sprite.Sprite):
     """ This class represents the enemy . """
-    def __init__(self):
+    def __init__(self, x, y, angle, speed):
         # Call the parent class (Sprite) constructor
         super().__init__()
         
         self.image = pygame.Surface([25,25])
         self.image.fill(RED)
         
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(center=(x, y))
+        angle = math.radians(angle)
+        print(angle)
+        self.speed_x = speed * math.cos(angle)
+        self.speed_y = speed * math.sin(angle)       
+        
+    def update(self, player):
+        # find normalized direction vector (dx, dy) between enemy and player
+        dx, dy = self.rect.x - player.rect.x, self.rect.y - player.rect.y
+        dist = math.hypot(dx, dy)
+        dx, dy = dx / dist, dy / dist
+        # move along this normalized vector towards the player at current speed
+        self.rect.x += dx * self.speed
+        self.rect.y += dy * self.speed        
+        
+              
         
         
 class Bullet(pygame.sprite.Sprite):
@@ -153,7 +168,8 @@ def main():
 
     # -------- Main Program Loop -----------
     while not done:
-
+        
+        enemy = Enemy(random.randrange(SCREEN_WIDTH), random.randrange(SCREEN_HEIGHT), 60, 3)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -198,19 +214,26 @@ def main():
                 
                                  
                         	
-                    
+                   
+        enemy_vector_x = enemy.rect.center[0] - player.rect.center[0]
+        enemy_vector_y = enemy.rect.center[1] - player.rect.center[1]
+        enemy_vector = math.hypot(enemy_vector_x, enemy_vector_y)
+        enemy_angle = math.degrees(math.atan2(enemy_vector_y, enemy_vector_x))
+        if enemy_angle < 0:
+            enemy_angle += 360
             
         if len(enemy_list) < 10:
             # This represents a enemy
-            enemy = Enemy()
-         
-            # Set a random location for the enemy
-            enemy.rect.x = random.randrange(SCREEN_WIDTH)
-            enemy.rect.y = random.randrange(SCREEN_HEIGHT)
+            
+               
+                
+            enemy = Enemy(random.randrange(SCREEN_WIDTH), random.randrange(SCREEN_HEIGHT), enemy_angle, 3)
          
             # Add the enemy to the list of objects
             enemy_list.add(enemy)
-            all_sprites_list.add(enemy)   
+            all_sprites_list.add(enemy)  
+            
+        
             
 
 
