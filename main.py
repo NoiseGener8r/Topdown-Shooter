@@ -1,6 +1,6 @@
 ## TODO ##
 
-# Continue making bullets go pew pew
+# Celebrate success!
 
 # Topdown Shooter
 # By NoiseGenerator
