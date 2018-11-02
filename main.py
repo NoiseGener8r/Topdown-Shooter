@@ -26,9 +26,8 @@ SCREEN_HEIGHT = 600
 
 # Images:
 player_image_right = pygame.image.load('player_right.png')
-player_image_left = pygame.image.load('player_left.png')
-player_image_up = pygame.image.load('player_right.png')
-player_image_down = pygame.image.load('player_left.png')
+player_image_right = pygame.transform.rotate(player_image_right, -90)
+
 
 
 class Player(pygame.sprite.Sprite):
@@ -41,7 +40,7 @@ class Player(pygame.sprite.Sprite):
  
         # Call the parent's constructor
         super().__init__()
-                
+        self.original_image = player_image_right
         self.image = player_image_right
         
         self.rect = self.image.get_rect()
@@ -49,31 +48,37 @@ class Player(pygame.sprite.Sprite):
         # Set speed vector of player
         self.new_x = 0
         self.new_y = 0
+        self.angle = 0
         
     def update(self):
-        """ Move the player. """
         
+        """ Move the player. """
+        vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
+        vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
+        vector = math.hypot(vector_x, vector_y)
+        self.angle = math.degrees(math.atan2(vector_y, vector_x))
+        
+        #angle += 360
+        
+               
+        self.image = pygame.transform.rotate(self.original_image, -1 * self.angle)
+        print(self.angle)
         self.rect.x += self.new_x      
         self.rect.y += self.new_y
         
         
-    # Player-controlled movement:
-    def go_left(self):
-        """ Called when the user hits the left arrow. """
-        self.new_x = -3
-        self.image = player_image_left  
-    def go_right(self):
-        """ Called when the user hits the left arrow. """
-        self.new_x = 3
-        self.image = player_image_right 
-    def go_up(self):
-        """ Called when the user hits the left arrow. """
-        self.new_y = -3
-        self.image = player_image_up 
-    def go_down(self):
-        """ Called when the user hits the left arrow. """
-        self.new_y = 3
-        self.image = player_image_down  
+    def forward(self):
+        
+        
+        speed = 6
+        self.new_x = speed * math.cos(math.radians(self.angle))
+        self.new_y = speed * math.sin(math.radians(self.angle))     
+        
+    def stop(self):
+        while self.new_x > 0:
+            self.new_x -= 5
+        while self.new_y > 0:
+            self.new_y -= 5
     
     def shoot(self):
         
@@ -117,12 +122,14 @@ class Enemy(pygame.sprite.Sprite):
 class Bullet(pygame.sprite.Sprite):
     """ This class represents the bullet . """
     def __init__(self, x, y, angle, speed):
+        
+        
         pygame.sprite.Sprite.__init__(self)
         # Rotate the bullet image (negative angle because y-axis is flipped).
         self.image = pygame.transform.rotate(pygame.Surface([5,5]), angle)
         self.rect = self.image.get_rect(center=(x, y))
         angle = math.radians(angle)
-        print(angle)
+        
         self.speed_x = speed * math.cos(angle)
         self.speed_y = speed * math.sin(angle)       
                
@@ -167,36 +174,21 @@ def main():
 
     # -------- Main Program Loop -----------
     while not done:
+        key=pygame.key.get_pressed()
         
-        
+        if key[pygame.K_w]:
+            player.forward()
+        elif key[pygame.K_w] != True:
+            player.stop()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
                 # MOVEMENT #
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    player.go_left()
-                if event.key == pygame.K_d:
-                    player.go_right()
-                if event.key == pygame.K_w:
-                    player.go_up()
-                if event.key == pygame.K_s:
-                    player.go_down()
-
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_a and player.new_x < 0:
-                    player.new_x = 0
-                if event.key == pygame.K_d and player.new_x > 0:
-                    player.new_x = 0
-                if event.key == pygame.K_w and player.new_y < 0:
-                    player.new_y = 0
-                if event.key == pygame.K_s and player.new_y > 0:
-                    player.new_y = 0
-                    
+            
                     
                     # FIRING #
-        key=pygame.key.get_pressed()  #checking pressed keys
+          #checking pressed keys
         if key[pygame.K_SPACE]:
             vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
             vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
@@ -207,7 +199,7 @@ def main():
             bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
             bullet_list.add(bullet)
             all_sprites_list.add(bullet)
-                    
+            
         
                    
                 
