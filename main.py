@@ -90,27 +90,26 @@ class Player(pygame.sprite.Sprite):
         
 class Enemy(pygame.sprite.Sprite):
     """ This class represents the enemy . """
-    def __init__(self, x, y, angle, speed):
+    def __init__(self):
         # Call the parent class (Sprite) constructor
         super().__init__()
         
         self.image = pygame.Surface([25,25])
         self.image.fill(RED)
         
-        self.rect = self.image.get_rect(center=(x, y))
-        angle = math.radians(angle)
-        print(angle)
-        self.speed_x = speed * math.cos(angle)
-        self.speed_y = speed * math.sin(angle)       
+        self.rect = self.image.get_rect()
+              
         
-    def update(self, player):
-        # find normalized direction vector (dx, dy) between enemy and player
-        dx, dy = self.rect.x - player.rect.x, self.rect.y - player.rect.y
-        dist = math.hypot(dx, dy)
-        dx, dy = dx / dist, dy / dist
-        # move along this normalized vector towards the player at current speed
-        self.rect.x += dx * self.speed
-        self.rect.y += dy * self.speed        
+    def update(self):
+        global player
+        if self.rect.x != player.rect.x or self.rect.y != player.rect.y:
+            # find normalized direction vector (dx, dy) between enemy and player
+            dx, dy = self.rect.x - player.rect.x, self.rect.y - player.rect.y
+            dist = math.hypot(dx, dy)
+            dx, dy = dx / dist, dy / dist
+            # move along this normalized vector towards the player at current speed
+            self.rect.x -= dx * 2
+            self.rect.y -= dy * 2     
         
               
         
@@ -138,7 +137,7 @@ class Bullet(pygame.sprite.Sprite):
         
         
 def main():
-    
+    global player
     """ Main Program """
     pygame.init()
  
@@ -169,7 +168,7 @@ def main():
     # -------- Main Program Loop -----------
     while not done:
         
-        enemy = Enemy(random.randrange(SCREEN_WIDTH), random.randrange(SCREEN_HEIGHT), 60, 3)
+        
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -197,17 +196,17 @@ def main():
                     
                     
                     # FIRING #
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
-                    vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
-                    vector = math.hypot(vector_x, vector_y)
-                    angle = math.degrees(math.atan2(vector_y, vector_x))
-                    if angle < 0:
-                        angle += 360
-                    bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
-                    bullet_list.add(bullet)
-                    all_sprites_list.add(bullet)
+        key=pygame.key.get_pressed()  #checking pressed keys
+        if key[pygame.K_SPACE]:
+            vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
+            vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
+            vector = math.hypot(vector_x, vector_y)
+            angle = math.degrees(math.atan2(vector_y, vector_x))
+            if angle < 0:
+                angle += 360
+            bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
+            bullet_list.add(bullet)
+            all_sprites_list.add(bullet)
                     
         
                    
@@ -215,19 +214,32 @@ def main():
                                  
                         	
                    
-        enemy_vector_x = enemy.rect.center[0] - player.rect.center[0]
-        enemy_vector_y = enemy.rect.center[1] - player.rect.center[1]
-        enemy_vector = math.hypot(enemy_vector_x, enemy_vector_y)
-        enemy_angle = math.degrees(math.atan2(enemy_vector_y, enemy_vector_x))
-        if enemy_angle < 0:
-            enemy_angle += 360
+        
             
         if len(enemy_list) < 10:
             # This represents a enemy
             
-               
+            enemy = Enemy()  
+            enemy_spawn = random.randint(0,3)
+            if enemy_spawn == 0:
                 
-            enemy = Enemy(random.randrange(SCREEN_WIDTH), random.randrange(SCREEN_HEIGHT), enemy_angle, 3)
+                enemy.rect.y = random.randint(0,SCREEN_HEIGHT)
+                enemy.rect.x = -10
+                
+            if enemy_spawn == 1:
+                
+                enemy.rect.y = random.randint(0,SCREEN_HEIGHT)
+                enemy.rect.x = SCREEN_WIDTH
+                
+            if enemy_spawn == 2:
+                
+                enemy.rect.x = random.randint(0,SCREEN_WIDTH)
+                enemy.rect.y = -10
+                
+            if enemy_spawn == 3:
+                
+                enemy.rect.x = random.randint(0,SCREEN_WIDTH)
+                enemy.rect.y = SCREEN_HEIGHT
          
             # Add the enemy to the list of objects
             enemy_list.add(enemy)
