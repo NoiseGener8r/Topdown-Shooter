@@ -75,10 +75,14 @@ class Player(pygame.sprite.Sprite):
         self.new_y = speed * math.sin(math.radians(self.angle))     
         
     def stop(self):
+        
         while self.new_x > 0:
-            self.new_x -= 5
+            self.new_x -= 1
         while self.new_y > 0:
-            self.new_y -= 5
+            self.new_y -= 1
+        else:
+            self.new_y = 0
+            self.new_x = 0
     
     def shoot(self):
         
