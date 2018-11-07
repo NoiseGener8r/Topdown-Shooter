@@ -29,7 +29,6 @@ player_image_right = pygame.image.load('player_right.png')
 player_image_right = pygame.transform.rotate(player_image_right, -90)
 
 
-
 class Player(pygame.sprite.Sprite):
     """ This class represents the bar at the bottom that the player
         controls. """
@@ -49,14 +48,25 @@ class Player(pygame.sprite.Sprite):
         self.new_x = 0
         self.new_y = 0
         self.angle = 0
+        self.px = 0
+        self.py = 0
+        self.new_angle = 0
+        
         
     def update(self):
+        ox, oy = self.rect.center
+        
+        
+        self.px = ox + math.cos(self.new_angle) * (self.px - ox) - math.sin(self.new_angle) * (self.py - oy)
+        self.py = oy + math.sin(self.new_angle) * (self.px - ox) + math.cos(self.new_angle) * (self.py - oy)        
         
         """ Move the player. """
-        vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
-        vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
+        vector_x = self.px - player.rect.center[0]
+        vector_y = self.py - player.rect.center[1]
         vector = math.hypot(vector_x, vector_y)
         self.angle = math.degrees(math.atan2(vector_y, vector_x))
+        
+                    
         
         #angle += 360
         
@@ -83,6 +93,9 @@ class Player(pygame.sprite.Sprite):
         else:
             self.new_y = 0
             self.new_x = 0
+            
+    def stop_rotate(self):
+        self.new_angle = 0
     
     def shoot(self):
         
@@ -193,9 +206,21 @@ def main():
                     
                     # FIRING #
           #checking pressed keys
+          
+        if key[pygame.K_q]:
+            player.new_angle = 1
+            
+        elif key[pygame.K_e]:
+            player.new_angle = -1
+        
+        elif key[pygame.K_e] != True or key[pygame.K_q] != True:
+            player.stop_rotate()
+        
+            
+            
         if key[pygame.K_SPACE]:
-            vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
-            vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
+            vector_x = player.px - player.rect.center[0]
+            vector_y = player.py - player.rect.center[1]
             vector = math.hypot(vector_x, vector_y)
             angle = math.degrees(math.atan2(vector_y, vector_x))
             if angle < 0:
