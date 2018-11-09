@@ -12,6 +12,7 @@ pygame.init()
 all_sprites_list = pygame.sprite.Group()
 bullet_list = pygame.sprite.Group()
 enemy_list = pygame.sprite.Group()
+item_list = pygame.sprite.Group()
 
 # Colors
 BLACK = (0, 0, 0)
@@ -25,9 +26,18 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 # Images:
-player_image_right = pygame.image.load('player_right.png')
-player_image_right = pygame.transform.rotate(player_image_right, -90)
+player_up = pygame.image.load('./images/player_up.png')
+player_right = pygame.transform.rotate(player_up, -90)
+player_left = pygame.transform.rotate(player_up, 90)
+player_down = pygame.transform.rotate(player_up, 180)
 
+ammo_pile = pygame.image.load('./images/ammo_pile.png')
+health_pickup = pygame.image.load('./images/health_pickup.png')
+
+
+# OTHER CONSTANTS
+
+RANDOMNESS = 100
 
 class Player(pygame.sprite.Sprite):
     """ This class represents the bar at the bottom that the player
@@ -39,75 +49,59 @@ class Player(pygame.sprite.Sprite):
  
         # Call the parent's constructor
         super().__init__()
-        self.original_image = player_image_right
-        self.image = player_image_right
+        self.original_image = player_up
+        self.image = player_up
         
         self.rect = self.image.get_rect()
  
         # Set speed vector of player
         self.new_x = 0
         self.new_y = 0
-        self.angle = 0
-        self.px = 0
-        self.py = 0
-        self.new_angle = 0
         
+        self.hp = 10
+        self.ammo = 50
+        self.score = 0
         
     def update(self):
-        ox, oy = self.rect.center
-        
-        
-        self.px = ox + math.cos(self.new_angle) * (self.px - ox) - math.sin(self.new_angle) * (self.py - oy)
-        self.py = oy + math.sin(self.new_angle) * (self.px - ox) + math.cos(self.new_angle) * (self.py - oy)        
-        
-        """ Move the player. """
-        vector_x = self.px - player.rect.center[0]
-        vector_y = self.py - player.rect.center[1]
-        vector = math.hypot(vector_x, vector_y)
-        self.angle = math.degrees(math.atan2(vector_y, vector_x))
-        
-                    
-        
-        #angle += 360
-        
-               
-        self.image = pygame.transform.rotate(self.original_image, -1 * self.angle)
-        print(self.angle)
+        if self.rect.x < 0:
+            self.rect.x = 0
+        if self.rect.x > SCREEN_WIDTH - player.rect.width:
+            self.rect.x = SCREEN_WIDTH - player.rect.width
+        if self.rect.y < 0:
+            self.rect.y = 0
+        if self.rect.y > SCREEN_HEIGHT - player.rect.height:
+            self.rect.y = SCREEN_HEIGHT - player.rect.height
         self.rect.x += self.new_x      
         self.rect.y += self.new_y
         
         
-    def forward(self):
         
         
-        speed = 6
-        self.new_x = speed * math.cos(math.radians(self.angle))
-        self.new_y = speed * math.sin(math.radians(self.angle))     
+    def up(self):
+        
+        self.new_y = -3
+        self.image = player_up
+    def down(self):
+        
+        self.new_y = 3 
+        self.image = player_down
+    def left(self):
+        
+        self.new_x = -3
+        self.image = player_left
+    def right(self):
+        
+        self.new_x = 3
+        self.image = player_right
         
     def stop(self):
         
-        while self.new_x > 0:
-            self.new_x -= 1
-        while self.new_y > 0:
-            self.new_y -= 1
-        else:
-            self.new_y = 0
-            self.new_x = 0
+        self.new_x = 0
+        self.new_y = 0
             
-    def stop_rotate(self):
-        self.new_angle = 0
     
-    def shoot(self):
-        
-        
-       
-        bullet = Bullet()
-        # Set the bullet so it is where the player is
-        bullet.rect.x = self.rect.x
-        bullet.rect.y = self.rect.y
-        # Add the bullet to the lists
-        all_sprites_list.add(bullet)
-        bullet_list.add(bullet)
+    
+   
                 
         
 class Enemy(pygame.sprite.Sprite):
@@ -124,9 +118,9 @@ class Enemy(pygame.sprite.Sprite):
         
     def update(self):
         global player
-        if self.rect.x != player.rect.x or self.rect.y != player.rect.y:
+        if self.rect.center[0] != player.rect.center[0] or self.rect.center[1] != player.rect.center[1]:
             # find normalized direction vector (dx, dy) between enemy and player
-            dx, dy = self.rect.x - player.rect.x, self.rect.y - player.rect.y
+            dx, dy = self.rect.center[0] - player.rect.center[0], self.rect.center[1] - player.rect.center[1]
             dist = math.hypot(dx, dy)
             dx, dy = dx / dist, dy / dist
             # move along this normalized vector towards the player at current speed
@@ -157,9 +151,65 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
         
+class Item(pygame.sprite.Sprite):
+    """This is the generic item class all other items are derived from . """
+    def __init__(self):
+        
+        super().__init__()
+        
             
         
+class AmmoPile(Item):
+    """This is the ammo pickup . """
+    def __init__(self):
         
+        super().__init__()
+        
+        self.image = ammo_pile
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, SCREEN_WIDTH)
+        self.rect.y = random.randint(0, SCREEN_HEIGHT)
+        
+    def pickup(self):
+        player.ammo += 10
+        
+class Heart(Item):
+    """This is the health pickup . """
+    def __init__(self):
+        
+        super().__init__()
+        
+        self.image = health_pickup
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, SCREEN_WIDTH)
+        self.rect.y = random.randint(0, SCREEN_HEIGHT)
+        
+    def pickup(self):
+        player.hp += 10
+        
+        
+def drawtext(screen, text, color, x, y):  
+    pygame.font.init() # you have to call this at the start, 
+                # if you want to use this module.
+    myfont = pygame.font.SysFont('Arial', 30)  
+    newtextsurface = myfont.render(str(text), False, color)
+    screen.blit(newtextsurface, (x, y))
+    
+def create_item(item_id):
+    if item_id == 0:
+        ammo_pile = AmmoPile()
+        all_sprites_list.add(ammo_pile)
+        item_list.add(ammo_pile)   
+    if item_id == 1:
+        heart = Heart()
+        all_sprites_list.add(heart)
+        item_list.add(heart)
+    else:
+        return 0
+    
+def game_over(score):
+    done = True
+    
 def main():
     global player
     """ Main Program """
@@ -187,16 +237,15 @@ def main():
 
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
+    
+    key = pygame.key.get_pressed()
 
 
     # -------- Main Program Loop -----------
     while not done:
-        key=pygame.key.get_pressed()
+        key = pygame.key.get_pressed()
         
-        if key[pygame.K_w]:
-            player.forward()
-        elif key[pygame.K_w] != True:
-            player.stop()
+        
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -207,20 +256,24 @@ def main():
                     # FIRING #
           #checking pressed keys
           
-        if key[pygame.K_q]:
-            player.new_angle = 1
-            
-        elif key[pygame.K_e]:
-            player.new_angle = -1
+        if key[pygame.K_w]:
+            player.up()
+        if key[pygame.K_s]:
+            player.down()
+        if key[pygame.K_a]:
+            player.left()
+        if key[pygame.K_d]:
+            player.right()
         
-        elif key[pygame.K_e] != True or key[pygame.K_q] != True:
-            player.stop_rotate()
+        if not key[pygame.K_w] and not key[pygame.K_a] and not key[pygame.K_s] and not key[pygame.K_d]:
+            player.stop()
+            
         
             
             
-        if key[pygame.K_SPACE]:
-            vector_x = player.px - player.rect.center[0]
-            vector_y = player.py - player.rect.center[1]
+        if key[pygame.K_SPACE] and player.ammo > 0:
+            vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
+            vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
             vector = math.hypot(vector_x, vector_y)
             angle = math.degrees(math.atan2(vector_y, vector_x))
             if angle < 0:
@@ -228,6 +281,8 @@ def main():
             bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
             bullet_list.add(bullet)
             all_sprites_list.add(bullet)
+            player.image = pygame.transform.rotate(player_up, -angle-90)
+            player.ammo -= 1
             
         
                    
@@ -281,18 +336,56 @@ def main():
             for enemy in enemy_hit_list:
                 bullet_list.remove(bullet)
                 all_sprites_list.remove(bullet)
-                #score += 1
+                player.score += 1
                 #print(score)
     
             # Remove the bullet if it flies up off the screen
             if bullet.rect.y < -10 or bullet.rect.y > SCREEN_HEIGHT or bullet.rect.x > SCREEN_WIDTH or bullet.rect.x < -10:
                 bullet_list.remove(bullet)
-                all_sprites_list.remove(bullet)        
+                all_sprites_list.remove(bullet)  
+                
         
+        for enemy in enemy_list:
+    
+            
+            player_hit_list = pygame.sprite.spritecollide(player, enemy_list, True)
+    
+            
+            for enemy in player_hit_list:
+                enemy_list.remove(enemy)
+                all_sprites_list.remove(enemy)
+                player.hp -= 1
+                
+                
+        
+        pickup_chance = random.randint(0,RANDOMNESS)
+        create_item(pickup_chance)
+            
+    
+
+        for item in item_list:
+    
+           
+            item_pickup_list = pygame.sprite.spritecollide(player, item_list, True)
+    
+            
+            for item in item_pickup_list:
+                item.pickup()
+                item_list.remove(item)
+                all_sprites_list.remove(item)
+                
+                    
+        if player.hp <= 0:
+            
+            done = True
+            
         # ALL CODE TO DRAW SHOULD GO BELOW THIS COMMENT
         screen.fill(WHITE)
         
         all_sprites_list.draw(screen)
+        drawtext(screen, player.ammo, RED, 0, 10)
+        drawtext(screen, player.hp, RED, 50, 10)
+        drawtext(screen, player.score, RED, 100, 10)
         # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
 
         # Limit to 60 frames per second
@@ -303,7 +396,21 @@ def main():
 
     # Be IDLE friendly. If you forget this line, the program will 'hang'
     # on exit.
-    pygame.quit()    
+    
+    
+    while done:   
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()       
+        
+        screen.fill(WHITE)
+        drawtext(screen, player.score, RED, SCREEN_HEIGHT/2, SCREEN_WIDTH/2)
+        
+        # Limit to 60 frames per second
+        clock.tick(60)
+    
+        # Go ahead and update the screen with what we've drawn.
+        pygame.display.flip()        
     
     
     
