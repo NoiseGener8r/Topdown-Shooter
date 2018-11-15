@@ -250,9 +250,56 @@ def main():
         
 
         for event in pygame.event.get():
+            
             if event.type == pygame.QUIT:
                 done = True
                 # MOVEMENT #
+                
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                   
+                    if player.weapon == 1 and player.ammo > 0:
+                       
+                        vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
+                        vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
+                        vector = math.hypot(vector_x, vector_y)
+                        angle = math.degrees(math.atan2(vector_y, vector_x))
+                        if angle < 0:
+                            angle += 360
+                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
+                        bullet_list.add(bullet)
+                        all_sprites_list.add(bullet)
+                        player.image = pygame.transform.rotate(player_up, -angle-90)
+                        player.ammo -= 1 
+                        
+                    if player.weapon == 2 and player.ammo > 2:
+                        
+                        vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
+                        vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
+                        vector = math.hypot(vector_x, vector_y)
+                        angle = math.degrees(math.atan2(vector_y, vector_x))
+                        if angle < 0:
+                            angle += 360
+                       
+                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle-20, 6)
+                        bullet_list.add(bullet)
+                        all_sprites_list.add(bullet)
+                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
+                        bullet_list.add(bullet)
+                        all_sprites_list.add(bullet)
+                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle+20, 6)
+                        bullet_list.add(bullet)
+                        all_sprites_list.add(bullet)                        
+                        player.image = pygame.transform.rotate(player_up, -angle-90)
+                        player.ammo -= 3
+                        
+                if event.key == pygame.K_3:
+                    player.weapon = 2
+                if event.key == pygame.K_2:
+                    player.weapon = 0
+                if event.key == pygame.K_1:
+                    player.weapon = 1
             
                     
                     # FIRING #
@@ -287,21 +334,8 @@ def main():
                 player.image = pygame.transform.rotate(player_up, -angle-90)
                 player.ammo -= 1
                 
-        if player.weapon == 1:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if key == pygame.K_SPACE:
-                        vector_x = pygame.mouse.get_pos()[0] - player.rect.center[0]
-                        vector_y = pygame.mouse.get_pos()[1] - player.rect.center[1]
-                        vector = math.hypot(vector_x, vector_y)
-                        angle = math.degrees(math.atan2(vector_y, vector_x))
-                        if angle < 0:
-                            angle += 360
-                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
-                        bullet_list.add(bullet)
-                        all_sprites_list.add(bullet)
-                        player.image = pygame.transform.rotate(player_up, -angle-90)
-                        player.ammo -= 1                          
+        
+                                    
             
         
                    
@@ -401,7 +435,13 @@ def main():
         all_sprites_list.draw(screen)
         drawtext(screen, 'Ammo: ' + str(player.ammo), RED, 130, 10)
         drawtext(screen, 'HP: ' + str(player.hp), RED, 10, 10)
-        drawtext(screen, 'Score: ' + str(player.score), RED, SCREEN_WIDTH-300, 10)
+        drawtext(screen, 'Score: ' + str(player.score), RED, SCREEN_WIDTH-150, 10)
+        if player.weapon == 0:
+            drawtext(screen, 'Weapon: SMG', RED, SCREEN_WIDTH-400, 10)
+        if player.weapon == 1:
+            drawtext(screen, 'Weapon: USP', RED, SCREEN_WIDTH-400, 10)
+        if player.weapon == 2:
+            drawtext(screen, 'Weapon: Shotgun', RED, SCREEN_WIDTH-400, 10)
         # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
 
         # Limit to 60 frames per second
@@ -420,7 +460,7 @@ def main():
                 pygame.quit()       
         
         screen.fill(WHITE)
-        drawtext(screen, 'SCORE: ' + str(player.score), RED, 200, 300)
+        drawtext(screen, 'SCORE: ' + str(player.score), RED, 300, 300)
         
         # Limit to 60 frames per second
         clock.tick(60)
