@@ -89,19 +89,19 @@ class Player(pygame.sprite.Sprite):
         
     def up(self):
         
-        self.new_y = -2
+        self.new_y = -4
         self.image = player_up
     def down(self):
         
-        self.new_y = 2
+        self.new_y = 4
         self.image = player_down
     def left(self):
         
-        self.new_x = -2
+        self.new_x = -4
         self.image = player_left
     def right(self):
         
-        self.new_x = 2
+        self.new_x = 4
         self.image = player_right
         
     def stop(self):
@@ -134,8 +134,8 @@ class Enemy(pygame.sprite.Sprite):
             dist = math.hypot(dx, dy)
             dx, dy = dx / dist, dy / dist
             # move along this normalized vector towards the player at current speed
-            self.rect.x -= dx * 2
-            self.rect.y -= dy * 2     
+            self.rect.x -= dx * 3
+            self.rect.y -= dy * 3     
         
               
         
@@ -206,6 +206,7 @@ def drawtext(screen, text, color, x, y):
     screen.blit(newtextsurface, (x, y))
     
 def create_item(item_id):
+    
     if item_id > 0 and item_id < 2:
         ammo_pile = AmmoPile()
         all_sprites_list.add(ammo_pile)
@@ -428,6 +429,8 @@ def main():
         if player.hp <= 0:
             
             done = True
+        pygame.time.Clock()
+        
             
         # ALL CODE TO DRAW SHOULD GO BELOW THIS COMMENT
         screen.fill(WHITE)
@@ -442,6 +445,8 @@ def main():
             drawtext(screen, 'Weapon: USP', RED, SCREEN_WIDTH-400, 10)
         if player.weapon == 2:
             drawtext(screen, 'Weapon: Shotgun', RED, SCREEN_WIDTH-400, 10)
+            
+        drawtext(screen, str(pygame.time.Clock.get_fps()), RED, SCREEN_WIDTH-100, SCREEN_HEIGHT-50)
         # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
 
         # Limit to 60 frames per second
@@ -464,6 +469,7 @@ def main():
         
         # Limit to 60 frames per second
         clock.tick(60)
+        
     
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()       
