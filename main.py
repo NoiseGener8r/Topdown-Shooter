@@ -1,12 +1,14 @@
 ## TODO ##
 
-# Fix lag
+# Fix enemy hitboxes
+# No enemies near player spawn
+# 
 
 # Topdown Shooter
 # By NoiseGenerator
 # Licensed under GNU GPL
 
-import pygame, random, math
+import pygame, random, math, sys
 from pygame.math import Vector2
 pygame.init()
 all_sprites_list = pygame.sprite.Group()
@@ -263,6 +265,7 @@ def main():
                 
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    sys.exit()
         
             
             if event.type == pygame.KEYDOWN:
@@ -271,6 +274,7 @@ def main():
                         main_menu = False
         except:
             pygame.quit()
+            sys.exit()
         
     # -------- Main Program Loop -----------
     while not done and not main_menu:
@@ -510,11 +514,14 @@ def main():
         try:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()  
+                    pygame.quit() 
+                    sys.exit()
         except:
             pygame.quit()
+            sys.exit()
             
     pygame.quit()
+    sys.exit()
     
     
     
