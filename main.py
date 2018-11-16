@@ -1,6 +1,6 @@
 ## TODO ##
 
-# Celebrate success!
+# Fix lag
 
 # Topdown Shooter
 # By NoiseGenerator
