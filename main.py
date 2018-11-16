@@ -43,6 +43,8 @@ player_down = pygame.transform.rotate(player_up, 180)
 ammo_pile = pygame.image.load('./images/ammo_pile.png').convert_alpha()
 health_pickup = pygame.image.load('./images/health_pickup.png').convert_alpha()    
 
+foe_image = pygame.image.load('./images/foe.png').convert_alpha()
+
 # OTHER CONSTANTS
 
 RANDOMNESS = 500
@@ -120,8 +122,8 @@ class Enemy(pygame.sprite.Sprite):
         # Call the parent class (Sprite) constructor
         super().__init__()
         
-        self.image = pygame.Surface([25,25])
-        self.image.fill(RED)
+        self.image = foe_image
+        
         
         self.rect = self.image.get_rect()
               
@@ -135,7 +137,11 @@ class Enemy(pygame.sprite.Sprite):
             dx, dy = dx / dist, dy / dist
             # move along this normalized vector towards the player at current speed
             self.rect.x -= dx * 3
-            self.rect.y -= dy * 3     
+            self.rect.y -= dy * 3   
+            angle = math.degrees(math.atan2(dy, dx))
+            if angle < 0:
+                angle += 360
+            self.image = pygame.transform.rotate(foe_image, -angle+90)
         
               
         
@@ -201,7 +207,7 @@ class Heart(Item):
 def drawtext(screen, text, color, x, y):  
     pygame.font.init() # you have to call this at the start, 
                 # if you want to use this module.
-    myfont = pygame.font.SysFont('Arial', 30)  
+    myfont = pygame.font.SysFont('Press Start 2P', 40)  
     newtextsurface = myfont.render(str(text), False, color)
     screen.blit(newtextsurface, (x, y))
     
@@ -242,10 +248,32 @@ def main():
     clock = pygame.time.Clock()
     
     key = pygame.key.get_pressed()
-
-
+    main_menu = True
+    
+    if main_menu:
+        screen.fill(BLACK) 
+        drawtext(screen, 'TOPDOWN SHOOTER', RED, 25, 25)
+        drawtext(screen, 'BY NOISEGENERATOR', RED, 25, 60)
+        drawtext(screen, 'PRESS ENTER TO BEGIN...', RED, 25, 565)
+         
+        pygame.display.flip()
+    while main_menu:
+        try:
+            for event in pygame.event.get():
+                
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+        
+            
+            if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        done = False
+                        main_menu = False
+        except:
+            pygame.quit()
+        
     # -------- Main Program Loop -----------
-    while not done:
+    while not done and not main_menu:
         key = pygame.key.get_pressed()
         
         
@@ -282,16 +310,16 @@ def main():
                         angle = math.degrees(math.atan2(vector_y, vector_x))
                         if angle < 0:
                             angle += 360
-                       
-                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle-20, 6)
-                        bullet_list.add(bullet)
-                        all_sprites_list.add(bullet)
-                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
-                        bullet_list.add(bullet)
-                        all_sprites_list.add(bullet)
-                        bullet = Bullet(player.rect.center[0], player.rect.center[1], angle+20, 6)
-                        bullet_list.add(bullet)
-                        all_sprites_list.add(bullet)                        
+                        for i in range(3):
+                            bullet = Bullet(player.rect.center[0], player.rect.center[1], angle-10, 6)
+                            bullet_list.add(bullet)
+                            all_sprites_list.add(bullet)
+                            bullet = Bullet(player.rect.center[0], player.rect.center[1], angle, 6)
+                            bullet_list.add(bullet)
+                            all_sprites_list.add(bullet)
+                            bullet = Bullet(player.rect.center[0], player.rect.center[1], angle+10, 6)
+                            bullet_list.add(bullet)
+                            all_sprites_list.add(bullet)                        
                         player.image = pygame.transform.rotate(player_up, -angle-90)
                         player.ammo -= 3
                         
@@ -301,6 +329,19 @@ def main():
                     player.weapon = 0
                 if event.key == pygame.K_1:
                     player.weapon = 1
+                    
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 4:
+                        if player.weapon < 2:
+                            player.weapon += 1
+                        else:
+                            player.weapon = 0
+                    elif event.button == 5:
+                        if player.weapon > 0:
+                            player.weapon -= 1
+                        else:
+                            player.weapon = 2
+                        
             
                     
                     # FIRING #
@@ -429,11 +470,12 @@ def main():
         if player.hp <= 0:
             
             done = True
-        pygame.time.Clock()
-        
+        for i in range(20):
+            pygame.time.Clock()
+            current_fps =  pygame.time.Clock().get_fps()
             
         # ALL CODE TO DRAW SHOULD GO BELOW THIS COMMENT
-        screen.fill(WHITE)
+        screen.fill((255, 205, 102))
         
         all_sprites_list.draw(screen)
         drawtext(screen, 'Ammo: ' + str(player.ammo), RED, 130, 10)
@@ -446,7 +488,7 @@ def main():
         if player.weapon == 2:
             drawtext(screen, 'Weapon: Shotgun', RED, SCREEN_WIDTH-400, 10)
             
-        drawtext(screen, str(pygame.time.Clock.get_fps()), RED, SCREEN_WIDTH-100, SCREEN_HEIGHT-50)
+        drawtext(screen, str(current_fps), RED, SCREEN_WIDTH-100, SCREEN_HEIGHT-50)
         # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
 
         # Limit to 60 frames per second
@@ -458,22 +500,20 @@ def main():
     # Be IDLE friendly. If you forget this line, the program will 'hang'
     # on exit.
     
+    if done and not main_menu: 
+        screen.fill(BLACK)
+        drawtext(screen, 'GAME OVER', RED, 310, 210)
+        drawtext(screen, 'SCORE: ' + str(player.score), RED, 310, 310)        
+        pygame.display.flip()
     
-    if done:   
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()       
-        
-        screen.fill(WHITE)
-        drawtext(screen, 'SCORE: ' + str(player.score), RED, 300, 300)
-        
-        # Limit to 60 frames per second
-        clock.tick(60)
-        
-    
-        # Go ahead and update the screen with what we've drawn.
-        pygame.display.flip()       
-        
+    while done and not main_menu:   
+        try:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()  
+        except:
+            pygame.quit()
+            
     pygame.quit()
     
     
