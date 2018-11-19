@@ -1,5 +1,5 @@
 # Topdown Shooter
 # By NoiseGenerator
 
-Wow look its a top-down space shooter.
+Wow look its a top-down shooter.
 Never seen that before.
