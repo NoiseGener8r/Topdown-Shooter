@@ -75,6 +75,7 @@ class Player(pygame.sprite.Sprite):
         self.score = 0
         
         self.weapon = 1
+        self.invincibility = 0
         
     def update(self):
         if self.rect.x < 0:
@@ -87,6 +88,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.y = SCREEN_HEIGHT - player.rect.height
         self.rect.x += self.new_x      
         self.rect.y += self.new_y
+        self.invincibility -= 1
         
         
         
@@ -446,11 +448,14 @@ def main():
             
             player_hit_list = pygame.sprite.spritecollide(player, enemy_list, True)
     
-            
-            for enemy in player_hit_list:
-                enemy_list.remove(enemy)
-                all_sprites_list.remove(enemy)
-                player.hp -= 1
+            if player.invincibility < 0:
+                for enemy in player_hit_list:
+                    enemy_list.remove(enemy)
+                    all_sprites_list.remove(enemy)
+                    player.hp -= 1
+                    player.invincibility = 50
+                    
+                
                 
                 
         
