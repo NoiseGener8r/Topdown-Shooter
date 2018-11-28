@@ -41,6 +41,7 @@ player_up = pygame.image.load('./images/player_up.png').convert_alpha()
 player_right = pygame.transform.rotate(player_up, -90)
 player_left = pygame.transform.rotate(player_up, 90)
 player_down = pygame.transform.rotate(player_up, 180)
+base_original_image = player_up
 
 ammo_pile = pygame.image.load('./images/ammo_pile.png').convert_alpha()
 health_pickup = pygame.image.load('./images/health_pickup.png').convert_alpha()    
@@ -75,7 +76,9 @@ class Player(pygame.sprite.Sprite):
         self.score = 0
         
         self.weapon = 1
-        self.invincibility = 0
+        self.hit_countdown = 0
+        self.image_hit = self.image
+        
         
     def update(self):
         if self.rect.x < 0:
@@ -88,7 +91,15 @@ class Player(pygame.sprite.Sprite):
             self.rect.y = SCREEN_HEIGHT - player.rect.height
         self.rect.x += self.new_x      
         self.rect.y += self.new_y
-        self.invincibility -= 1
+        self.hit_countdown -= 1
+        self.image_hit = self.image
+        if self.hit_countdown > 0:
+            
+            if self.hit_countdown % 2:
+                self.image = pygame.Surface([5,5])
+            else:
+                self.image = self.image_hit
+              
         
         
         
@@ -448,12 +459,13 @@ def main():
             
             player_hit_list = pygame.sprite.spritecollide(player, enemy_list, True)
     
-            if player.invincibility < 0:
+            if player.hit_countdown < 0:
                 for enemy in player_hit_list:
                     enemy_list.remove(enemy)
                     all_sprites_list.remove(enemy)
                     player.hp -= 1
-                    player.invincibility = 50
+                    player.hit_countdown = 50
+    
                     
                 
                 
@@ -461,8 +473,11 @@ def main():
         
         pickup_chance = random.randint(0,RANDOMNESS)
         create_item(pickup_chance)
+        cur_image = player.image
+        if player.hit_countdown < -1:
+            player.hit_countdown = -1
+        
             
-    
 
         for item in item_list:
     
