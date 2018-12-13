@@ -145,7 +145,7 @@ class Enemy(pygame.sprite.Sprite):
         
     def update(self):
         global player
-        if self.rect.center[0] != player.rect.center[0] or self.rect.center[1] != player.rect.center[1]:
+        if self.rect.center[0] != player.rect.center[0] and self.rect.center[1] != player.rect.center[1]:
             # find normalized direction vector (dx, dy) between enemy and player
             dx, dy = self.rect.center[0] - player.rect.center[0], self.rect.center[1] - player.rect.center[1]
             dist = math.hypot(dx, dy)
